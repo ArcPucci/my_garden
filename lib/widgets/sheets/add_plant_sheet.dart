@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_garden/models/models.dart';
@@ -75,32 +74,48 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
                                 onDelete: () => onDelete(index),
                               ),
                               if (typeOfCare.enabled) ...[
-                                SizedBox(height: 12.h),
-                                PeriodTypesList(
-                                  daily: typeOfCare.daily,
-                                  onSelect: (value) =>
-                                      onSelectPeriod(value, index),
-                                ),
+                                if (action.hasDailyOption) ...[
+                                  SizedBox(height: 12.h),
+                                  PeriodTypesList(
+                                    daily: typeOfCare.daily,
+                                    onSelect: (value) =>
+                                        onSelectPeriod(value, index),
+                                  ),
+                                ],
+                                if (!typeOfCare.daily ||
+                                    !action.hasDailyOption) ...[
+                                  SizedBox(height: 12.h),
+                                  SizedBox(
+                                    width: 343.w,
+                                    child: Text(
+                                      'Set date',
+                                      style: AppTextStyles.regular16.copyWith(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  CustomDatePicker(
+                                    onChanged: (date) =>
+                                        onChangedDate(date, index),
+                                  ),
+                                ],
                                 SizedBox(height: 12.h),
                                 SizedBox(
                                   width: 343.w,
                                   child: Text(
-                                    'Set date',
+                                    'Set time',
                                     style: AppTextStyles.regular16.copyWith(
                                       color: Colors.black,
                                     ),
                                   ),
                                 ),
                                 SizedBox(height: 8.h),
-                                CustomBG(
-                                  width: 343.w,
-                                  height: 164.h,
-                                  child: CupertinoDatePicker(
-                                    itemExtent: 35.h,
-                                    mode: CupertinoDatePickerMode.date,
-                                    onDateTimeChanged: (date) {},
-                                  ),
+                                CustomTimePicker(
+                                  onChanged: (time) =>
+                                      onChangedTime(time, index),
                                 ),
+                                SizedBox(height: 12.h),
                               ],
                               Container(
                                 width: 343.w,
@@ -146,5 +161,24 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
   void onDelete(int index) {
     typesOfCare.removeAt(index);
     setState(() {});
+  }
+
+  void onChangedDate(DateTime date, int index) {
+    final currentDate = typesOfCare[index].date;
+    typesOfCare[index].date = currentDate.copyWith(
+      year: date.year,
+      month: date.month,
+      day: date.day,
+    );
+    print(typesOfCare[index].date);
+  }
+
+  void onChangedTime(DateTime time, int index) {
+    final currentTime = typesOfCare[index].date;
+    typesOfCare[index].date = currentTime.copyWith(
+      hour: time.hour,
+      month: time.minute,
+    );
+    print(typesOfCare[index].date);
   }
 }

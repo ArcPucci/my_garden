@@ -3,15 +3,12 @@ import 'package:my_garden/models/models.dart';
 
 class TypeOfCare {
   final PlantAction plantAction;
-  bool hasDailyOption = false;
   bool enabled = false;
   bool daily = true;
   TextEditingController? controller;
+  DateTime date = DateTime.now();
 
-  TypeOfCare({
-    required this.plantAction,
-    this.controller,
-  }) : hasDailyOption = plantAction.hasDailyOption;
+  TypeOfCare({required this.plantAction, this.controller});
 
   factory TypeOfCare.empty() => TypeOfCare(plantAction: PlantAction.empty());
 }
