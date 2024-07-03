@@ -88,6 +88,18 @@ class _MyAppState extends State<MyApp> {
                   child: const CalendarScreen(),
                 );
               },
+              routes: [
+                GoRoute(
+                  path: 'actions',
+                  pageBuilder: (context, state) {
+                    return buildPageWithDefaultTransition(
+                      context: context,
+                      state: state,
+                      child: const ActionsScreen(),
+                    );
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/settings',
