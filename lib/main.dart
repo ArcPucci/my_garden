@@ -3,14 +3,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_garden/providers/plants_provider.dart';
 import 'package:my_garden/screens/screens.dart';
+import 'package:my_garden/services/services.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final sqlService = SqlService();
+    await sqlService.init();
+
     runApp(ScreenUtilInit(
       designSize: const Size(375, 812),
       builder: (context, child) {
-        return const MyApp();
+        return MyApp(sqlService: sqlService);
       },
     ));
   }, (error, stack) {
@@ -40,7 +48,9 @@ CustomTransitionPage buildPageWithDefaultTransition({
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.sqlService});
+
+  final SqlService sqlService;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -141,13 +151,34 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        Provider(
+          create: (context) => PlantActionsService(
+            widget.sqlService.database,
+          ),
+        ),
+        Provider(
+          create: (context) => PlantsService(
+            widget.sqlService.database,
+          ),
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (context) => PlantsProvider(
+            plantsService: Provider.of(context, listen: false),
+            actionsService: Provider.of(context, listen: false),
+          )..init(),
+        ),
+      ],
+      child: MaterialApp.router(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        routerConfig: _router,
       ),
-      routerConfig: _router,
     );
   }
 }

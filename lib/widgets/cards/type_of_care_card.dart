@@ -14,6 +14,7 @@ class TypeOfCareCard extends StatelessWidget {
     this.onEnable,
     this.controller,
     this.onDelete,
+    this.onChanged,
   });
 
   final TextEditingController? controller;
@@ -21,6 +22,7 @@ class TypeOfCareCard extends StatelessWidget {
   final VoidCallback? onEnable;
   final PlantAction plantAction;
   final VoidCallback? onDelete;
+  final void Function(String value, PlantAction plantAction)? onChanged;
 
   final focusNode = FocusNode();
 
@@ -84,6 +86,7 @@ class TypeOfCareCard extends StatelessWidget {
             alignment: Alignment.center,
             child: TextField(
               controller: controller,
+              onChanged: (value) => onChanged?.call(value, plantAction),
               inputFormatters: [LengthLimitingTextInputFormatter(16)],
               style: AppTextStyles.semiBold18.copyWith(color: AppTheme.green3),
               decoration: const InputDecoration.collapsed(hintText: ''),

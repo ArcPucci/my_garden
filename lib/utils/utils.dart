@@ -4,3 +4,4 @@ export 'tab_bar_items.dart';
 export 'actions.dart';
 export 'types_of_period.dart';
 export 'datetime_extension.dart';
+export 'custom_tabs.dart';

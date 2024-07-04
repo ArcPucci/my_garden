@@ -24,6 +24,13 @@ class AppTextStyles {
     color: AppTheme.blue2,
   );
 
+  static final TextStyle regular13 = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 13.r,
+    height: 18 / 13,
+    color: Colors.black,
+  );
+
   static final TextStyle regular18 = TextStyle(
     fontWeight: FontWeight.w400,
     fontSize: 18.r,
@@ -52,6 +59,13 @@ class AppTextStyles {
     color: Colors.black,
   );
 
+  static final TextStyle semiBold16 = TextStyle(
+    fontWeight: FontWeight.w600,
+    fontSize: 16.r,
+    height: 22 / 16,
+    color: Colors.black,
+  );
+
   static final TextStyle semiBold18 = TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 18.r,
@@ -63,6 +77,20 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     fontSize: 22.r,
     height: 1,
+    color: Colors.black,
+  );
+
+  static final TextStyle semiBold24 = TextStyle(
+    fontWeight: FontWeight.w600,
+    fontSize: 24.r,
+    height: 22 / 24,
+    color: Colors.black,
+  );
+
+  static final TextStyle semiBold13 = TextStyle(
+    fontWeight: FontWeight.w600,
+    fontSize: 13.r,
+    height: 18 / 13,
     color: Colors.black,
   );
 
@@ -85,6 +113,13 @@ class AppTextStyles {
     fontSize: 24.r,
     height: 22 / 24,
     color: Colors.black,
+  );
+
+  static final TextStyle light44 = TextStyle(
+    fontWeight: FontWeight.w300,
+    fontSize: 44.r,
+    height: 1,
+    color: Colors.white,
   );
 
   static final TextStyle regular17 = TextStyle(
