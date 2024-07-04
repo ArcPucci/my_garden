@@ -88,6 +88,18 @@ class _MyAppState extends State<MyApp> {
                   child: const PlantsScreen(),
                 );
               },
+              routes: [
+                GoRoute(
+                  path: 'tasks',
+                  pageBuilder: (context, state) {
+                    return buildPageWithDefaultTransition(
+                      context: context,
+                      state: state,
+                      child: const TasksScreen(),
+                    );
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/calendar',
@@ -168,6 +180,7 @@ class _MyAppState extends State<MyApp> {
           create: (context) => PlantsProvider(
             plantsService: Provider.of(context, listen: false),
             actionsService: Provider.of(context, listen: false),
+            router: _router,
           )..init(),
         ),
       ],

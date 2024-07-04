@@ -9,6 +9,7 @@ export 'app_bars/custom_app_bar_2.dart';
 export 'cards/type_of_care_card.dart';
 export 'cards/plant_card.dart';
 export 'cards/action_card.dart';
+export 'cards/task_card.dart';
 export 'pickers/custom_date_picker.dart';
 export 'pickers/custom_time_picker.dart';
 export 'custom_bottom_bar.dart';

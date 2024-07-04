@@ -1,6 +1,7 @@
 export 'welcome_screen.dart';
 export 'navigation_screen.dart';
 export 'plants/plants_screen.dart';
+export 'plants/tasks_screen.dart';
 export 'calendar/actions_screen.dart';
 export 'calendar/calendar_screen.dart';
 export 'settings/settings_screen.dart';

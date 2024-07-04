@@ -7,37 +7,44 @@ class ActionCard extends StatelessWidget {
   const ActionCard({
     super.key,
     required this.plantAction,
+    this.count = 0,
+    this.onTap,
   });
 
+  final int count;
   final PlantAction plantAction;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 375.w,
-      height: 88.h,
-      alignment: Alignment.centerRight,
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        width: 347.w,
+        width: 375.w,
         height: 88.h,
-        padding: EdgeInsets.only(right: 28.w),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              width: 2.sp,
-              color: AppTheme.gray2,
+        alignment: Alignment.centerRight,
+        child: Container(
+          width: 347.w,
+          height: 88.h,
+          padding: EdgeInsets.only(right: 28.w),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                width: 2.sp,
+                color: AppTheme.gray2,
+              ),
             ),
           ),
-        ),
-        child: Row(
-          children: [
-            _buildImage(),
-            SizedBox(width: 12.w),
-            if (plantAction.image.isNotEmpty)
-              Text(plantAction.name, style: AppTextStyles.semiBold16),
-            Spacer(),
-            Text('2', style: AppTextStyles.semiBold24),
-          ],
+          child: Row(
+            children: [
+              _buildImage(),
+              SizedBox(width: 12.w),
+              if (plantAction.image.isNotEmpty)
+                Text(plantAction.name, style: AppTextStyles.semiBold16),
+              Spacer(),
+              Text('${count}', style: AppTextStyles.semiBold24),
+            ],
+          ),
         ),
       ),
     );

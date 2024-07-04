@@ -80,15 +80,23 @@ class _PlantsScreenState extends State<PlantsScreen> {
   }
 
   Widget _buildTasksList(BuildContext context, PlantsProvider value) {
+    final list = value.todayTasks.keys.toList();
     return ListView.builder(
       padding: EdgeInsets.symmetric(vertical: 28.h),
-      itemCount: value.actions.length,
+      itemCount: list.length,
       itemBuilder: (context, index) {
         final last = index == value.actions.length - 1;
-        final action = value.actions[index];
+        final id = list[index];
+        final action = value.actions.firstWhere((e) => e.id == id);
+        final list2 = value.todayTasks[id]!;
+        final count = list2.length;
         return Padding(
           padding: EdgeInsets.only(bottom: last ? 150.h : 0),
-          child: ActionCard(plantAction: action),
+          child: ActionCard(
+            plantAction: action,
+            count: count,
+            onTap: () => value.onSelect(list2, action),
+          ),
         );
       },
     );
