@@ -3,8 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_garden/widgets/widgets.dart';
 
 class CustomTimePicker extends StatelessWidget {
-  const CustomTimePicker({super.key, required this.onChanged});
+  const CustomTimePicker({
+    super.key,
+    required this.onChanged,
+    this.dateTime,
+  });
 
+  final DateTime? dateTime;
   final void Function(DateTime) onChanged;
 
   @override

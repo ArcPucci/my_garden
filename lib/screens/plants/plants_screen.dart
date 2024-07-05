@@ -52,7 +52,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
                             child: CustomButton1(
                               width: 319.w,
                               icon: 'assets/png/icons/plus.png',
-                              onTap: () => onAddPlant(context),
+                              onTap: onAddPlant,
                             ),
                           ),
                         ),
@@ -73,6 +73,10 @@ class _PlantsScreenState extends State<PlantsScreen> {
         final plant = value.plants[index];
         return PlantCard(
           plant: plant,
+          onTap: () {
+            value.onSelectPlant(plant);
+            onAddPlant(edit: true);
+          },
           onDelete: () => value.onDeletePlant(plant),
         );
       },
@@ -107,7 +111,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: () => onAddPlant(context),
+          onTap: onAddPlant,
           child: Image.asset(
             'assets/png/add.png',
             width: 58.w,
@@ -120,11 +124,11 @@ class _PlantsScreenState extends State<PlantsScreen> {
     );
   }
 
-  void onAddPlant(BuildContext context) async {
+  void onAddPlant({bool edit = false}) async {
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
-        return const AddPlantSheet();
+        return AddPlantSheet(edit: edit);
       },
     );
   }

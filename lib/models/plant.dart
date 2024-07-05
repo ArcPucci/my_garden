@@ -15,6 +15,8 @@ class Plant {
     required this.actions,
   });
 
+  factory Plant.empty() => Plant(id: -1, name: '', image: '', actions: []);
+
   Plant copyWith({
     int? id,
     String? name,

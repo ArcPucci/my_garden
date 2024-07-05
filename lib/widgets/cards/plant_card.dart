@@ -42,27 +42,30 @@ class PlantCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Container(
-        width: 375.w,
-        height: 96.h,
-        alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: onTap,
         child: Container(
-          width: 347.w,
+          width: 375.w,
           height: 96.h,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                width: 2.sp,
-                color: AppTheme.gray2,
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 347.w,
+            height: 96.h,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  width: 2.sp,
+                  color: AppTheme.gray2,
+                ),
               ),
             ),
-          ),
-          child: Row(
-            children: [
-              _buildImage(),
-              SizedBox(width: 12.w),
-              Text(plant.name, style: AppTextStyles.semiBold16),
-            ],
+            child: Row(
+              children: [
+                _buildImage(),
+                SizedBox(width: 12.w),
+                Text(plant.name, style: AppTextStyles.semiBold16),
+              ],
+            ),
           ),
         ),
       ),

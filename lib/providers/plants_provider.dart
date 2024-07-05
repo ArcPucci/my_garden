@@ -39,6 +39,10 @@ class PlantsProvider extends ChangeNotifier {
 
   PlantAction get plantAction => _plantAction;
 
+  Plant _plant = Plant.empty();
+
+  Plant get plant => _plant;
+
   void init() async {
     _plants = await _plantsService.getPlants();
     _actions = await _actionsService.getAllActions();
@@ -57,7 +61,7 @@ class PlantsProvider extends ChangeNotifier {
         final id = item2.actionId;
         final temp = _actions.map((e) => e.id).toList();
 
-        if(!temp.contains(id)) continue;
+        if (!temp.contains(id)) continue;
 
         if (_todayTasks[id] == null) {
           _todayTasks[id] = [item.id];
@@ -112,5 +116,17 @@ class PlantsProvider extends ChangeNotifier {
     _selectedPlants = _plants.where((e) => list.contains(e.id)).toList();
     _plantAction = plantAction;
     _router.go('/tasks');
+  }
+
+  void onSelectPlant(Plant plant) {
+    _plant = plant;
+  }
+
+  void onEditPlant(Plant plant, File? file) async {
+    await _plantsService.onUpdate(plant, file);
+
+    _plants = await _plantsService.getPlants();
+    _getTodayTasks();
+    notifyListeners();
   }
 }

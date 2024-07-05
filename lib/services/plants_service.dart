@@ -34,8 +34,16 @@ class PlantsService {
     );
   }
 
-  Future<void> onUpdate(Plant plant) async {
-    final map = plant.toMap();
+  Future<void> onUpdate(Plant plant, File? file) async {
+    final directory = await getApplicationCacheDirectory();
+    Plant temp = plant;
+
+    if (file != null) {
+      final File newImage = await file
+          .copy('${directory.path}/photo${file.path.split('/').last}');
+      temp = temp.copyWith(image: newImage.path);
+    }
+    final map = temp.toMap();
     await database.update(
       plantsTable,
       map,

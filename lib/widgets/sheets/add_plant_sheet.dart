@@ -11,7 +11,9 @@ import 'package:my_garden/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 class AddPlantSheet extends StatefulWidget {
-  const AddPlantSheet({super.key});
+  const AddPlantSheet({super.key, this.edit = false});
+
+  final bool edit;
 
   @override
   State<AddPlantSheet> createState() => _AddPlantSheetState();
@@ -20,6 +22,7 @@ class AddPlantSheet extends StatefulWidget {
 class _AddPlantSheetState extends State<AddPlantSheet> {
   Timer? _debounce;
   late PlantsProvider _actionsProvider;
+  Plant _plant = Plant.empty();
 
   final List<TypeOfCare> typesOfCare = [];
 
@@ -32,10 +35,29 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
       typesOfCare.add(
         TypeOfCare(
           plantAction: item,
-          controller: TextEditingController(text: item.name),
+          controller: item.image.isEmpty
+              ? TextEditingController(text: item.name)
+              : null,
         ),
       );
     }
+
+    if (!widget.edit) return;
+    final types = typesOfCare.map((e) => e.plantAction.id).toList();
+    _plant = _actionsProvider.plant;
+
+    plantName.text = _plant.name;
+    for (final temp in _plant.actions) {
+      if (!types.contains(temp.actionId)) continue;
+      final index = typesOfCare.indexWhere(
+        (e) => e.plantAction.id == temp.actionId,
+      );
+      typesOfCare[index].enabled = true;
+      typesOfCare[index].date = temp.date;
+      typesOfCare[index].daily = temp.daily;
+    }
+
+    if (_plant.image.isNotEmpty) file = XFile(_plant.image);
   }
 
   final plantName = TextEditingController();
@@ -231,6 +253,20 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
         daily: item.daily,
       );
       actionDates.add(temp);
+    }
+
+    if (widget.edit) {
+      _plant = _plant.copyWith(
+        name: plantName.text,
+        actions: actionDates,
+      );
+
+      _actionsProvider.onEditPlant(
+        _plant,
+        file == null ? null : File(file!.path),
+      );
+      Navigator.of(context).pop();
+      return;
     }
 
     final plant = Plant(
