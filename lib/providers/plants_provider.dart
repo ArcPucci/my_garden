@@ -43,10 +43,22 @@ class PlantsProvider extends ChangeNotifier {
 
   Plant get plant => _plant;
 
+  List<DateTime> _dates = [];
+
+  List<DateTime> get dates => _dates;
+
+  Map<int, int> _selectedActions = {};
+
+  Map<int, int> get selectedActions => _selectedActions;
+
+  DateTime _date = DateTime.now();
+
+  DateTime get date => _date;
+
   void init() async {
     _plants = await _plantsService.getPlants();
     _actions = await _actionsService.getAllActions();
-    _getTodayTasks();
+    await _getTodayTasks();
     notifyListeners();
   }
 
@@ -70,6 +82,7 @@ class PlantsProvider extends ChangeNotifier {
         _todayTasks[id]?.add(item.id);
       }
     }
+    await _getCalendarDates();
   }
 
   void onCreate(PlantAction plantAction) async {
@@ -126,7 +139,39 @@ class PlantsProvider extends ChangeNotifier {
     await _plantsService.onUpdate(plant, file);
 
     _plants = await _plantsService.getPlants();
-    _getTodayTasks();
+    await _getTodayTasks();
+    notifyListeners();
+  }
+
+  Future<void> _getCalendarDates() async {
+    _dates.clear();
+    for (final item in _plants) {
+      for (final item2 in item.actions) {
+        if (_dates.contains(item2.date.withZeroTime)) continue;
+        _dates.add(item2.date.withZeroTime);
+      }
+    }
+  }
+
+  void onSelectDate(DateTime dateTime) async {
+    _date = dateTime;
+    _selectedActions.clear();
+    for (final item in _plants) {
+      for (final item2 in item.actions) {
+        if (item2.date.withZeroTime != dateTime.withZeroTime) continue;
+
+        final id = item2.actionId;
+
+        if (_selectedActions[id] == null) {
+          _selectedActions[id] = 1;
+          continue;
+        }
+
+        _selectedActions[id] = _selectedActions[id]! + 1;
+      }
+      _router.go('/calendar/actions/');
+    }
+
     notifyListeners();
   }
 }

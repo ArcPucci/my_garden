@@ -3,22 +3,31 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_garden/providers/plants_provider.dart';
+import 'package:my_garden/providers/providers.dart';
 import 'package:my_garden/screens/screens.dart';
 import 'package:my_garden/services/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
+    final preferences = await SharedPreferences.getInstance();
+    final preferencesService = PreferencesService(preferences: preferences);
+
     final sqlService = SqlService();
     await sqlService.init();
+
+    await NotificationService().init();
 
     runApp(ScreenUtilInit(
       designSize: const Size(375, 812),
       builder: (context, child) {
-        return MyApp(sqlService: sqlService);
+        return MyApp(
+          sqlService: sqlService,
+          preferencesService: preferencesService,
+        );
       },
     ));
   }, (error, stack) {
@@ -48,9 +57,14 @@ CustomTransitionPage buildPageWithDefaultTransition({
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key, required this.sqlService});
+  const MyApp({
+    super.key,
+    required this.sqlService,
+    required this.preferencesService,
+  });
 
   final SqlService sqlService;
+  final PreferencesService preferencesService;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -63,11 +77,24 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _router = GoRouter(
+      initialLocation: '/welcome',
       routes: [
+        GoRoute(
+          path: '/welcome',
+          pageBuilder: (context, state) {
+            return buildPageWithDefaultTransition(
+              context: context,
+              state: state,
+              child: WelcomeScreen(),
+            );
+          },
+        ),
         ShellRoute(
           pageBuilder: (context, state, child) {
             final hasBottomBar = (!state.fullPath!.contains('privacy') &&
-                !state.fullPath!.contains('notification'));
+                !state.fullPath!.contains('notification') &&
+                !state.fullPath!.contains('tasks') &&
+                !state.fullPath!.contains('actions'));
             return buildPageWithDefaultTransition(
               context: context,
               state: state,
@@ -165,6 +192,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider.value(value: widget.preferencesService),
         Provider(
           create: (context) => PlantActionsService(
             widget.sqlService.database,
@@ -174,6 +202,11 @@ class _MyAppState extends State<MyApp> {
           create: (context) => PlantsService(
             widget.sqlService.database,
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PreferencesProvider(
+            service: widget.preferencesService,
+          )..init(),
         ),
         ChangeNotifierProvider(
           lazy: false,

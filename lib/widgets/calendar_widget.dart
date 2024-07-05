@@ -12,10 +12,12 @@ class CalendarWidget extends StatefulWidget {
     required this.onSelect,
     required this.onPrevMonth,
     required this.onNextMonth,
+    required this.dates,
   });
 
   final DateTime initialDate;
   final DateTime? selectedDate;
+  final List<DateTime> dates;
   final void Function(DateTime) onSelect;
   final void Function(DateTime) onPrevMonth;
   final void Function(DateTime) onNextMonth;
@@ -26,8 +28,8 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   static const _x = 7;
-  static const _y = 6;
-  static const _n = 42;
+  static const _y = 5;
+  static const _n = 35;
   static const List<String> _shortWeekdays = <String>[
     'S',
     'M',
@@ -92,7 +94,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       days.add(
         DayInfo(
           id: i,
-          canSelected: dateTime.isBefore(currentDateTime),
+          canSelected: dateTime.isAfter(currentDateTime),
           isCurrentMonth: true,
           isCurrentDay: dateTime == currentDateTime.withZeroTime,
         ),
@@ -128,7 +130,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               GestureDetector(
                 onTap: () {
                   final temp = widget.initialDate;
-                  widget.onSelect(temp.copyWith(month: temp.month - 1));
+                  widget.onPrevMonth(temp.copyWith(month: temp.month - 1));
                 },
                 child: Image.asset(
                   'assets/png/icons/prev.png',
@@ -145,7 +147,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 child: GestureDetector(
                   onTap: () {
                     final temp = widget.initialDate;
-                    widget.onSelect(temp.copyWith(month: temp.month + 1));
+                    widget.onNextMonth(temp.copyWith(month: temp.month + 1));
                   },
                   child: Image.asset(
                     'assets/png/icons/prev.png',
@@ -185,21 +187,30 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     _x,
                     (x) {
                       final day = days[index++];
+                      final temp = widget.initialDate.copyWith(day: day.id);
+                      final hasColor =
+                          widget.dates.contains(temp.withZeroTime) &&
+                              !day.isCurrentDay;
                       return GestureDetector(
                         onTap: () {
-                          final temp = widget.initialDate.copyWith(day: day.id);
+                          if(!day.canSelected && !day.isCurrentDay) return;
                           widget.onSelect(temp);
                         },
                         child: Container(
                           width: 40.w,
                           height: 40.h,
-                          alignment: Alignment.center,
-                          child: Text(
-                            '${day.id}',
-                            style: AppTextStyles.regular18.copyWith(
-                              color: AppTheme.gray8,
-                            ),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: day.isCurrentDay
+                                ? Border.all(
+                                    width: 2.sp,
+                                    color: AppTheme.blue3,
+                                  )
+                                : null,
+                            color: hasColor ? AppTheme.green : null,
                           ),
+                          alignment: Alignment.center,
+                          child: _buildDay(day),
                         ),
                       );
                     },
@@ -209,6 +220,29 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDay(DayInfo day) {
+    final temp = widget.initialDate.copyWith(day: day.id).withZeroTime;
+    if (!day.isCurrentMonth) return SizedBox();
+    if (day.isCurrentDay)
+      return Text(
+        '${day.id}',
+        style: AppTextStyles.regular18.copyWith(color: AppTheme.blue3),
+      );
+    if (widget.dates.contains(temp))
+      return Text(
+        '${day.id}',
+        style: AppTextStyles.regular18.copyWith(color: Colors.white),
+      );
+    if (day.canSelected)
+      return Text('${day.id}', style: AppTextStyles.regular18);
+    return Text(
+      '${day.id}',
+      style: AppTextStyles.regular18.copyWith(
+        color: AppTheme.gray8,
       ),
     );
   }

@@ -89,7 +89,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
       padding: EdgeInsets.symmetric(vertical: 28.h),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        final last = index == value.actions.length - 1;
+        final last = index == list.length - 1;
         final id = list[index];
         final action = value.actions.firstWhere((e) => e.id == id);
         final list2 = value.todayTasks[id]!;

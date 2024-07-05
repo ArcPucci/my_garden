@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:my_garden/providers/providers.dart';
 import 'package:my_garden/utils/utils.dart';
-import 'package:my_garden/widgets/buttons/custom_button_3.dart';
-import 'package:my_garden/widgets/app_bars/custom_app_bar.dart';
+import 'package:my_garden/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -43,14 +44,23 @@ class PremiumScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const CustomButton3(),
+                CustomButton3(onTap: () => onBuyPremium(context)),
                 SizedBox(height: 16.h),
-                Text('Restore', style: AppTextStyles.bold18),
+                GestureDetector(
+                  onTap: () => onBuyPremium(context),
+                  child: Text('Restore', style: AppTextStyles.bold18),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void onBuyPremium(BuildContext context) {
+    final value = Provider.of<PreferencesProvider>(context, listen: false);
+    value.onBuyPremium();
+    Navigator.of(context).pop();
   }
 }

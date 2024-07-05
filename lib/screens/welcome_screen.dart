@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_garden/utils/utils.dart';
 import 'package:my_garden/widgets/widgets.dart';
 
@@ -62,7 +63,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            const CustomButton1(text: 'Start'),
+            CustomButton1(text: 'Start', onTap: () => context.go('/')),
             SizedBox(
               width: 327.w,
               height: 44.h,
