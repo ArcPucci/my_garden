@@ -2,6 +2,7 @@ export 'buttons/custom_button_1.dart';
 export 'buttons/custom_button_2.dart';
 export 'buttons/custom_button_3.dart';
 export 'buttons/custom_button_4.dart';
+export 'buttons/custom_button_5.dart';
 export 'buttons/custom_switch_button.dart';
 export 'sheets/add_plant_sheet.dart';
 export 'app_bars/custom_app_bar.dart';

@@ -8,10 +8,10 @@ class PlantActionsService {
 
   PlantActionsService(this.database);
 
-  Future<void> onCreate(PlantAction plantAction) async {
+  Future<int> onCreate(PlantAction plantAction) async {
     final map = plantAction.toMap();
     map['id'] = null;
-    await database.insert(plantActionsTable, map);
+    return await database.insert(plantActionsTable, map);
   }
 
   Future<void> onUpdate(PlantAction plantAction) async {

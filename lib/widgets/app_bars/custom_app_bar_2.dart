@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_garden/utils/utils.dart';
 
 class CustomAppBar2 extends StatelessWidget {
-  const CustomAppBar2({super.key, this.onSave});
+  const CustomAppBar2({super.key, this.onSave, required this.text});
 
+  final String text;
   final VoidCallback? onSave;
 
   @override
@@ -52,7 +53,7 @@ class CustomAppBar2 extends StatelessWidget {
               ],
             ),
           ),
-          Text('Add plant', style: AppTextStyles.semiBold17),
+          Text(text, style: AppTextStyles.semiBold17),
         ],
       ),
     );

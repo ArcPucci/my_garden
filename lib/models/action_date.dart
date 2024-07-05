@@ -1,44 +1,51 @@
+import 'dart:convert';
+
 class ActionDate {
   final int actionId;
-  final DateTime date;
+  final List<DateTime> dates;
   final bool daily;
 
   ActionDate({
     required this.actionId,
-    required this.date,
+    required this.dates,
     required this.daily,
   });
 
   factory ActionDate.empty() => ActionDate(
         actionId: 0,
-        date: DateTime.now(),
+        dates: [DateTime.now()],
         daily: false,
       );
 
   ActionDate copyWith({
     int? actionId,
-    DateTime? date,
+    List<DateTime>? dates,
     bool? daily,
   }) {
     return ActionDate(
       actionId: actionId ?? this.actionId,
-      date: date ?? this.date,
+      dates: dates ?? this.dates,
       daily: daily ?? this.daily,
     );
   }
 
   Map<String, dynamic> toJson() {
+    final list = dates.map((e) => e.microsecondsSinceEpoch.toString()).toList();
     return {
       'action_id': actionId,
-      'date': date.microsecondsSinceEpoch,
+      'dates': jsonEncode(list),
       'daily': daily ? 1 : 0,
     };
   }
 
   factory ActionDate.fromJson(Map<String, dynamic> map) {
+    final list = jsonDecode(map['dates'] as String) as List<dynamic>;
+    final dates = list
+        .map((e) => DateTime.fromMicrosecondsSinceEpoch(int.parse(e)))
+        .toList();
     return ActionDate(
       actionId: map['action_id'] as int,
-      date: DateTime.fromMicrosecondsSinceEpoch(map['date'] as int),
+      dates: dates,
       daily: (map['daily'] as int) == 1,
     );
   }

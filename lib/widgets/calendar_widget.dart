@@ -13,11 +13,13 @@ class CalendarWidget extends StatefulWidget {
     required this.onPrevMonth,
     required this.onNextMonth,
     required this.dates,
+    this.hasDailyTasks = false,
   });
 
   final DateTime initialDate;
   final DateTime? selectedDate;
   final List<DateTime> dates;
+  final bool hasDailyTasks;
   final void Function(DateTime) onSelect;
   final void Function(DateTime) onPrevMonth;
   final void Function(DateTime) onNextMonth;
@@ -188,12 +190,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     (x) {
                       final day = days[index++];
                       final temp = widget.initialDate.copyWith(day: day.id);
-                      final hasColor =
-                          widget.dates.contains(temp.withZeroTime) &&
-                              !day.isCurrentDay;
+                      final hasColor = (widget.hasDailyTasks ||
+                              widget.dates.contains(temp.withZeroTime)) &&
+                          !day.isCurrentDay &&
+                          day.isCurrentMonth &&
+                          day.isCurrentMonth &&
+                          day.canSelected;
                       return GestureDetector(
                         onTap: () {
-                          if(!day.canSelected && !day.isCurrentDay) return;
+                          if (!day.canSelected && !day.isCurrentDay) return;
                           widget.onSelect(temp);
                         },
                         child: Container(
@@ -232,7 +237,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         '${day.id}',
         style: AppTextStyles.regular18.copyWith(color: AppTheme.blue3),
       );
-    if (widget.dates.contains(temp))
+    if (widget.dates.contains(temp) || widget.hasDailyTasks && day.canSelected)
       return Text(
         '${day.id}',
         style: AppTextStyles.regular18.copyWith(color: Colors.white),

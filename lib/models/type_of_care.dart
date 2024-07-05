@@ -6,7 +6,7 @@ class TypeOfCare {
   bool enabled = false;
   bool daily = true;
   TextEditingController? controller;
-  DateTime date = DateTime.now();
+  List<DateTime> dates = [DateTime.now()];
 
   TypeOfCare({required this.plantAction, this.controller});
 

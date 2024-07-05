@@ -27,6 +27,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             CalendarWidget(
               initialDate: _dateTime,
               dates: value.dates,
+              hasDailyTasks: value.hasDailyTask,
               onSelect: (date) {
                 _dateTime = date;
                 setState(() {});

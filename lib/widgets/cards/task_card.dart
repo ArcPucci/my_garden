@@ -5,48 +5,56 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_garden/models/models.dart';
 import 'package:my_garden/utils/utils.dart';
+import 'package:uuid/uuid.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
     super.key,
     required this.plantAction,
     required this.plant,
+    this.onDismissed,
   });
 
   final PlantAction plantAction;
   final Plant plant;
+  final VoidCallback? onDismissed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 375.w,
-      height: 96.h,
-      alignment: Alignment.centerRight,
+    var uuid = Uuid();
+    return Dismissible(
+      key: Key(uuid.v1()),
+      onDismissed: (det) => onDismissed?.call(),
       child: Container(
-        width: 347.w,
+        width: 375.w,
         height: 96.h,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              width: 2.sp,
-              color: AppTheme.gray2,
-            ),
-          ),
-        ),
-        padding: EdgeInsets.only(right: 28.w),
-        child: Row(
-          children: [
-            _buildImage(),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                plant.name,
-                style: AppTextStyles.semiBold16,
-                overflow: TextOverflow.ellipsis,
+        alignment: Alignment.centerRight,
+        child: Container(
+          width: 347.w,
+          height: 96.h,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                width: 2.sp,
+                color: AppTheme.gray2,
               ),
             ),
-            _buildCAction(),
-          ],
+          ),
+          padding: EdgeInsets.only(right: 28.w),
+          child: Row(
+            children: [
+              _buildImage(),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  plant.name,
+                  style: AppTextStyles.semiBold16,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              _buildCAction(),
+            ],
+          ),
         ),
       ),
     );

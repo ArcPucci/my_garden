@@ -15,7 +15,7 @@ class PlantAction {
         id: -1,
         name: 'Other',
         image: '',
-        hasDailyOption: true,
+        hasDailyOption: false,
       );
 
   PlantAction copyWith({

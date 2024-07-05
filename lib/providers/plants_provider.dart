@@ -55,48 +55,56 @@ class PlantsProvider extends ChangeNotifier {
 
   DateTime get date => _date;
 
+  bool _hasDailyTask = false;
+
+  bool get hasDailyTask => _hasDailyTask;
+
   void init() async {
     _plants = await _plantsService.getPlants();
-    _actions = await _actionsService.getAllActions();
     await _getTodayTasks();
     notifyListeners();
   }
 
   Future<void> _getTodayTasks() async {
+    _actions = await _actionsService.getAllActions();
     _todayTasks.clear();
     final currentDate = DateTime.now().withZeroTime;
     for (final item in _plants) {
       for (final item2 in item.actions) {
-        if (!item2.daily &&
-            (!item2.date.withZeroTime.isAtSameMomentAs(currentDate))) continue;
+        for (final date in item2.dates) {
+          final d1 = date.withZeroTime.microsecondsSinceEpoch;
+          final d2 = currentDate.microsecondsSinceEpoch;
+          if (d1 > d2) continue;
 
-        final id = item2.actionId;
-        final temp = _actions.map((e) => e.id).toList();
+          final id = item2.actionId;
+          final temp = _actions.map((e) => e.id).toList();
 
-        if (!temp.contains(id)) continue;
+          if (!temp.contains(id)) continue;
 
-        if (_todayTasks[id] == null) {
-          _todayTasks[id] = [item.id];
-          continue;
+          if (_todayTasks[id] == null) {
+            _todayTasks[id] = [item.id];
+            continue;
+          }
+          _todayTasks[id]?.add(item.id);
         }
-        _todayTasks[id]?.add(item.id);
       }
     }
     await _getCalendarDates();
   }
 
-  void onCreate(PlantAction plantAction) async {
-    await _actionsService.onCreate(plantAction);
+  Future<int> onCreate(PlantAction plantAction) async {
+    final id = await _actionsService.onCreate(plantAction);
 
     _actions = await _actionsService.getAllActions();
     await _getTodayTasks();
     notifyListeners();
+    return id;
   }
 
-  void onUpdate(PlantAction plantAction) async {
+  Future<void> onUpdate(PlantAction plantAction) async {
     await _actionsService.onUpdate(plantAction);
+    print(plantAction.id);
 
-    _actions = await _actionsService.getAllActions();
     await _getTodayTasks();
     notifyListeners();
   }
@@ -104,7 +112,6 @@ class PlantsProvider extends ChangeNotifier {
   void onDelete(PlantAction plantAction) async {
     await _actionsService.onDelete(plantAction);
 
-    _actions = await _actionsService.getAllActions();
     await _getTodayTasks();
     notifyListeners();
   }
@@ -126,7 +133,23 @@ class PlantsProvider extends ChangeNotifier {
   }
 
   void onSelect(List<int> list, PlantAction plantAction) {
-    _selectedPlants = _plants.where((e) => list.contains(e.id)).toList();
+    _selectedPlants.clear();
+
+    final temp = _plants.where((e) => list.contains(e.id)).toList();
+    final currentDate = DateTime.now().withZeroTime;
+
+    for (int i = 0; i < temp.length; i++) {
+      final item = temp[i];
+      final index =
+          item.actions.indexWhere((e) => e.actionId == plantAction.id);
+      for (final date in item.actions[index].dates) {
+        if (date.withZeroTime != currentDate) continue;
+        final temp2 = item.actions[index].copyWith(dates: [date]);
+        temp[i] = item.copyWith(actions: [temp2]);
+        _selectedPlants.add(item);
+      }
+    }
+
     _plantAction = plantAction;
     _router.go('/tasks');
   }
@@ -144,11 +167,21 @@ class PlantsProvider extends ChangeNotifier {
   }
 
   Future<void> _getCalendarDates() async {
+    _hasDailyTask = false;
+    final currentDate = DateTime.now();
     _dates.clear();
     for (final item in _plants) {
       for (final item2 in item.actions) {
-        if (_dates.contains(item2.date.withZeroTime)) continue;
-        _dates.add(item2.date.withZeroTime);
+        final actions = _actions.where((e) => e.id == item2.actionId);
+        if (actions.isEmpty) continue;
+        final action = actions.first;
+        for (final date in item2.dates) {
+          if (date.isBefore(currentDate)) continue;
+          if (_dates.contains(date.withZeroTime)) continue;
+          _dates.add(date.withZeroTime);
+          if (_hasDailyTask) continue;
+          _hasDailyTask = item2.daily && action.hasDailyOption;
+        }
       }
     }
   }
@@ -158,20 +191,48 @@ class PlantsProvider extends ChangeNotifier {
     _selectedActions.clear();
     for (final item in _plants) {
       for (final item2 in item.actions) {
-        if (item2.date.withZeroTime != dateTime.withZeroTime) continue;
-
         final id = item2.actionId;
+        final actions = _actions.where((e) => e.id == id);
+        if(actions.isEmpty) continue;
 
-        if (_selectedActions[id] == null) {
-          _selectedActions[id] = 1;
-          continue;
+        final action = actions.first;
+
+        for (final date in item2.dates) {
+          if ((date.withZeroTime != dateTime.withZeroTime &&
+                  !action.hasDailyOption) ||
+              (!item2.daily && action.hasDailyOption)) continue;
+
+          if (_selectedActions[id] == null) {
+            _selectedActions[id] = 1;
+            continue;
+          }
+
+          _selectedActions[id] = _selectedActions[id]! + 1;
         }
-
-        _selectedActions[id] = _selectedActions[id]! + 1;
       }
       _router.go('/calendar/actions/');
     }
 
+    notifyListeners();
+  }
+
+  void onCompleteTask(Plant plant, int plantIndex) async {
+    final index = _plants.indexWhere((e) => e.id == plant.id);
+    final actionIndex = _plants[index].actions.indexWhere(
+          (e) => e.actionId == plantAction.id,
+        );
+    _selectedPlants.removeAt(plantIndex);
+    if (_plants[index].actions[actionIndex].daily &&
+        plantAction.hasDailyOption) {
+      final lastDate = _plants[index].actions[actionIndex].dates.last;
+      _plants[index].actions[actionIndex].dates.last =
+          lastDate.add(Duration(days: 1));
+    } else {
+      _plants[index].actions[actionIndex].dates.removeLast();
+    }
+    await _plantsService.onUpdate(_plants[index], null);
+    _plants = await _plantsService.getPlants();
+    await _getTodayTasks();
     notifyListeners();
   }
 }

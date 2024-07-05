@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:my_garden/models/models.dart';
 import 'package:my_garden/utils/utils.dart';
 
@@ -17,6 +18,8 @@ class ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final id = plantAction.id;
+    final color = actionColors.length > id ? actionColors[id] : null;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -40,7 +43,10 @@ class ActionCard extends StatelessWidget {
               _buildImage(),
               SizedBox(width: 12.w),
               if (plantAction.image.isNotEmpty)
-                Text(plantAction.name, style: AppTextStyles.semiBold16),
+                Text(
+                  plantAction.name,
+                  style: AppTextStyles.semiBold16.copyWith(color: color),
+                ),
               Spacer(),
               Text('${count}', style: AppTextStyles.semiBold24),
             ],

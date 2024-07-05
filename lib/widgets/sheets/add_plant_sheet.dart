@@ -26,6 +26,8 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
 
   final List<TypeOfCare> typesOfCare = [];
 
+  String title = "Add plant";
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +47,7 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
     if (!widget.edit) return;
     final types = typesOfCare.map((e) => e.plantAction.id).toList();
     _plant = _actionsProvider.plant;
+    title = _plant.name;
 
     plantName.text = _plant.name;
     for (final temp in _plant.actions) {
@@ -52,8 +55,8 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
       final index = typesOfCare.indexWhere(
         (e) => e.plantAction.id == temp.actionId,
       );
-      typesOfCare[index].enabled = true;
-      typesOfCare[index].date = temp.date;
+      typesOfCare[index].enabled = temp.dates.isNotEmpty;
+      typesOfCare[index].dates = temp.dates;
       typesOfCare[index].daily = temp.daily;
     }
 
@@ -66,6 +69,7 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
   @override
   Widget build(BuildContext context) {
     final overlay = MediaQuery.of(context).padding;
+    double keyboard = MediaQuery.of(context).viewInsets.bottom;
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -80,7 +84,7 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
         child: Column(
           children: [
             SizedBox(height: 14.h),
-            CustomAppBar2(onSave: onSave),
+            CustomAppBar2(text: title, onSave: onSave),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(vertical: 46.h),
@@ -133,39 +137,69 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
                                         onSelectPeriod(value, index),
                                   ),
                                 ],
-                                if (!typeOfCare.daily ||
-                                    !action.hasDailyOption) ...[
-                                  SizedBox(height: 12.h),
-                                  SizedBox(
-                                    width: 343.w,
-                                    child: Text(
-                                      'Set date',
-                                      style: AppTextStyles.regular16.copyWith(
-                                        color: Colors.black,
-                                      ),
-                                    ),
+                                Column(
+                                  children: List.generate(
+                                    typeOfCare.dates.length,
+                                    (dateIndex) {
+                                      final date = typeOfCare.dates[dateIndex];
+                                      return Column(
+                                        children: [
+                                          if (!typeOfCare.daily ||
+                                              !action.hasDailyOption) ...[
+                                            SizedBox(height: 12.h),
+                                            SizedBox(
+                                              width: 343.w,
+                                              child: Text(
+                                                'Set date',
+                                                style: AppTextStyles.regular16
+                                                    .copyWith(
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 8.h),
+                                            CustomDatePicker(
+                                              dateTime: date,
+                                              onChanged: (date) =>
+                                                  onChangedDate(
+                                                date,
+                                                index,
+                                                dateIndex,
+                                              ),
+                                            ),
+                                          ],
+                                          SizedBox(height: 12.h),
+                                          SizedBox(
+                                            width: 343.w,
+                                            child: Text(
+                                              'Set time',
+                                              style: AppTextStyles.regular16
+                                                  .copyWith(
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(height: 8.h),
+                                          CustomTimePicker(
+                                            dateTime: date,
+                                            onChanged: (time) => onChangedTime(
+                                              time,
+                                              index,
+                                              dateIndex,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
-                                  SizedBox(height: 8.h),
-                                  CustomDatePicker(
-                                    onChanged: (date) =>
-                                        onChangedDate(date, index),
+                                ),
+                                if (!typeOfCare.daily ||
+                                    !typeOfCare.plantAction.hasDailyOption) ...[
+                                  SizedBox(height: 12.h),
+                                  CustomButton5(
+                                    onTap: () => onAddDate(index),
                                   ),
                                 ],
-                                SizedBox(height: 12.h),
-                                SizedBox(
-                                  width: 343.w,
-                                  child: Text(
-                                    'Set time',
-                                    style: AppTextStyles.regular16.copyWith(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 8.h),
-                                CustomTimePicker(
-                                  onChanged: (time) =>
-                                      onChangedTime(time, index),
-                                ),
                                 SizedBox(height: 12.h),
                               ],
                               Container(
@@ -180,7 +214,7 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
                     ),
                     SizedBox(height: 16.h),
                     CustomButton1(text: 'Add care', onTap: onAdd),
-                    SizedBox(height: 100.h),
+                    SizedBox(height: keyboard > 0 ? keyboard + 50.h : 100.h),
                   ],
                 ),
               ),
@@ -191,18 +225,22 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
     );
   }
 
-  void onAdd() {
+  void onAdd() async {
+    final id = await _actionsProvider.onCreate(PlantAction.empty());
     typesOfCare.add(TypeOfCare(
-      plantAction: PlantAction.empty(),
+      plantAction: PlantAction.empty().copyWith(id: id),
       controller: TextEditingController(text: 'Other'),
     ));
-    _actionsProvider.onCreate(PlantAction.empty());
+    typesOfCare.last.dates = [DateTime.now()];
     setState(() {});
   }
 
   void onEnable(int index) {
     typesOfCare[index].enabled = !typesOfCare[index].enabled;
     setState(() {});
+
+    if (typesOfCare[index].dates.isNotEmpty) return;
+    typesOfCare[index].dates = [DateTime.now()];
   }
 
   void onSelectPeriod(bool daily, int index) {
@@ -216,18 +254,18 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
     setState(() {});
   }
 
-  void onChangedDate(DateTime date, int index) {
-    final currentDate = typesOfCare[index].date;
-    typesOfCare[index].date = currentDate.copyWith(
+  void onChangedDate(DateTime date, int index, int dateIndex) {
+    final currentDate = typesOfCare[index].dates[dateIndex];
+    typesOfCare[index].dates[dateIndex] = currentDate.copyWith(
       year: date.year,
       month: date.month,
       day: date.day,
     );
   }
 
-  void onChangedTime(DateTime time, int index) {
-    final currentTime = typesOfCare[index].date;
-    typesOfCare[index].date = currentTime.copyWith(
+  void onChangedTime(DateTime time, int index, int dateIndex) {
+    final currentTime = typesOfCare[index].dates[dateIndex];
+    typesOfCare[index].dates[dateIndex] = currentTime.copyWith(
       hour: time.hour,
       month: time.minute,
     );
@@ -235,9 +273,10 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
 
   void onChanged(String value, PlantAction action) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    _debounce = Timer(const Duration(milliseconds: 200), () async {
       final temp = action.copyWith(name: value);
-      _actionsProvider.onUpdate(temp);
+      if (value.isEmpty) return;
+      await _actionsProvider.onUpdate(temp);
     });
   }
 
@@ -247,9 +286,10 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
 
     for (final item in typesOfCare) {
       if (!item.enabled) continue;
+      print(item.plantAction.name);
       final temp = ActionDate(
         actionId: item.plantAction.id,
-        date: item.date,
+        dates: item.dates,
         daily: item.daily,
       );
       actionDates.add(temp);
@@ -281,5 +321,10 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
       file == null ? null : File(file!.path),
     );
     Navigator.of(context).pop();
+  }
+
+  void onAddDate(int index) {
+    typesOfCare[index].dates.add(DateTime.now());
+    setState(() {});
   }
 }
