@@ -60,12 +60,12 @@ class PlantsProvider extends ChangeNotifier {
   bool get hasDailyTask => _hasDailyTask;
 
   void init() async {
-    _plants = await _plantsService.getPlants();
     await _getTodayTasks();
     notifyListeners();
   }
 
   Future<void> _getTodayTasks() async {
+    _plants = await _plantsService.getPlants();
     _actions = await _actionsService.getAllActions();
     _todayTasks.clear();
     final currentDate = DateTime.now().withZeroTime;
@@ -74,7 +74,7 @@ class PlantsProvider extends ChangeNotifier {
         for (final date in item2.dates) {
           final d1 = date.withZeroTime.microsecondsSinceEpoch;
           final d2 = currentDate.microsecondsSinceEpoch;
-          if (d1 > d2) continue;
+          if (d1 != d2) continue;
 
           final id = item2.actionId;
           final temp = _actions.map((e) => e.id).toList();
@@ -95,7 +95,6 @@ class PlantsProvider extends ChangeNotifier {
   Future<int> onCreate(PlantAction plantAction) async {
     final id = await _actionsService.onCreate(plantAction);
 
-    _actions = await _actionsService.getAllActions();
     await _getTodayTasks();
     notifyListeners();
     return id;
@@ -103,7 +102,6 @@ class PlantsProvider extends ChangeNotifier {
 
   Future<void> onUpdate(PlantAction plantAction) async {
     await _actionsService.onUpdate(plantAction);
-    print(plantAction.id);
 
     await _getTodayTasks();
     notifyListeners();
@@ -119,7 +117,6 @@ class PlantsProvider extends ChangeNotifier {
   void onCreatePlant(Plant plant, File? file) async {
     await _plantsService.onCreate(plant, file);
 
-    _plants = await _plantsService.getPlants();
     await _getTodayTasks();
     notifyListeners();
   }
@@ -127,7 +124,6 @@ class PlantsProvider extends ChangeNotifier {
   void onDeletePlant(Plant plant) async {
     await _plantsService.onDelete(plant);
 
-    _plants = await _plantsService.getPlants();
     await _getTodayTasks();
     notifyListeners();
   }
@@ -161,14 +157,13 @@ class PlantsProvider extends ChangeNotifier {
   void onEditPlant(Plant plant, File? file) async {
     await _plantsService.onUpdate(plant, file);
 
-    _plants = await _plantsService.getPlants();
     await _getTodayTasks();
     notifyListeners();
   }
 
   Future<void> _getCalendarDates() async {
     _hasDailyTask = false;
-    final currentDate = DateTime.now();
+    final currentDate = DateTime.now().withZeroTime;
     _dates.clear();
     for (final item in _plants) {
       for (final item2 in item.actions) {
@@ -176,11 +171,11 @@ class PlantsProvider extends ChangeNotifier {
         if (actions.isEmpty) continue;
         final action = actions.first;
         for (final date in item2.dates) {
+          if (_hasDailyTask) continue;
+          _hasDailyTask = item2.daily && action.hasDailyOption;
           if (date.isBefore(currentDate)) continue;
           if (_dates.contains(date.withZeroTime)) continue;
           _dates.add(date.withZeroTime);
-          if (_hasDailyTask) continue;
-          _hasDailyTask = item2.daily && action.hasDailyOption;
         }
       }
     }
@@ -193,27 +188,28 @@ class PlantsProvider extends ChangeNotifier {
       for (final item2 in item.actions) {
         final id = item2.actionId;
         final actions = _actions.where((e) => e.id == id);
-        if(actions.isEmpty) continue;
+        if (actions.isEmpty) continue;
 
-        final action = actions.first;
+        final action = actions.firstWhere((e) => e.id == id);
+        print(action.name);
+        print(item2.daily);
 
         for (final date in item2.dates) {
-          if ((date.withZeroTime != dateTime.withZeroTime &&
-                  !action.hasDailyOption) ||
-              (!item2.daily && action.hasDailyOption)) continue;
+          if ((date.withZeroTime == dateTime.withZeroTime) ||
+              (item2.daily && action.hasDailyOption)) {
+            if (_selectedActions[id] == null) {
+              _selectedActions[id] = 1;
+              continue;
+            }
 
-          if (_selectedActions[id] == null) {
-            _selectedActions[id] = 1;
-            continue;
+            _selectedActions[id] = _selectedActions[id]! + 1;
           }
-
-          _selectedActions[id] = _selectedActions[id]! + 1;
         }
       }
-      _router.go('/calendar/actions/');
     }
 
     notifyListeners();
+    _router.go('/calendar/actions/');
   }
 
   void onCompleteTask(Plant plant, int plantIndex) async {
@@ -231,7 +227,6 @@ class PlantsProvider extends ChangeNotifier {
       _plants[index].actions[actionIndex].dates.removeLast();
     }
     await _plantsService.onUpdate(_plants[index], null);
-    _plants = await _plantsService.getPlants();
     await _getTodayTasks();
     notifyListeners();
   }

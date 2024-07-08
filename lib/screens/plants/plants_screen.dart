@@ -71,13 +71,17 @@ class _PlantsScreenState extends State<PlantsScreen> {
       padding: EdgeInsets.symmetric(vertical: 12.h),
       itemBuilder: (context, index) {
         final plant = value.plants[index];
-        return PlantCard(
-          plant: plant,
-          onTap: () {
-            value.onSelectPlant(plant);
-            onAddPlant(edit: true);
-          },
-          onDelete: () => value.onDeletePlant(plant),
+        final last = index == value.plants.length - 1;
+        return Padding(
+          padding: EdgeInsets.only(bottom: last ? 150.h : 0),
+          child: PlantCard(
+            plant: plant,
+            onTap: () {
+              value.onSelectPlant(plant);
+              onAddPlant(edit: true);
+            },
+            onDelete: () => value.onDeletePlant(plant),
+          ),
         );
       },
     );
