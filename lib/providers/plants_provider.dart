@@ -64,8 +64,25 @@ class PlantsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _getTodayTasks() async {
+  Future<void> _updatePlants() async {
     _plants = await _plantsService.getPlants();
+    for (int i = 0; i < _plants.length; i++) {
+      final plant = _plants[i];
+      for (int j = 0; j < plant.actions.length; j++) {
+        final action = plant.actions[j];
+        if (!action.daily) continue;
+        for (int p = 0; p < action.dates.length; p++) {
+          final d1 = action.dates[p].withZeroTime.microsecondsSinceEpoch;
+          final d2 = DateTime.now().withZeroTime.microsecondsSinceEpoch;
+          if (d1 > d2) return;
+          _plants[i].actions[j].dates[p] = DateTime.now();
+        }
+      }
+    }
+  }
+
+  Future<void> _getTodayTasks() async {
+    await _updatePlants();
     _actions = await _actionsService.getAllActions();
     _todayTasks.clear();
     final currentDate = DateTime.now().withZeroTime;
@@ -191,8 +208,6 @@ class PlantsProvider extends ChangeNotifier {
         if (actions.isEmpty) continue;
 
         final action = actions.firstWhere((e) => e.id == id);
-        print(action.name);
-        print(item2.daily);
 
         for (final date in item2.dates) {
           if ((date.withZeroTime == dateTime.withZeroTime) ||
@@ -218,6 +233,8 @@ class PlantsProvider extends ChangeNotifier {
           (e) => e.actionId == plantAction.id,
         );
     _selectedPlants.removeAt(plantIndex);
+
+    print(_plants[index].actions[actionIndex].dates.last);
     if (_plants[index].actions[actionIndex].daily &&
         plantAction.hasDailyOption) {
       final lastDate = _plants[index].actions[actionIndex].dates.last;
@@ -226,6 +243,7 @@ class PlantsProvider extends ChangeNotifier {
     } else {
       _plants[index].actions[actionIndex].dates.removeLast();
     }
+    print(_plants[index].actions[actionIndex].dates.last);
     await _plantsService.onUpdate(_plants[index], null);
     await _getTodayTasks();
     notifyListeners();

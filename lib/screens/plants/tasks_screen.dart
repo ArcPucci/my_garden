@@ -12,7 +12,6 @@ class TasksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<PlantsProvider>(
       builder: (BuildContext context, value, Widget? child) {
-        print(value.selectedPlants.length);
         return Column(
           children: [
             SizedBox(height: 12.h),

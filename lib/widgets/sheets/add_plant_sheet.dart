@@ -286,7 +286,7 @@ class _AddPlantSheetState extends State<AddPlantSheet> {
 
     for (final item in typesOfCare) {
       if (!item.enabled) continue;
-      print(item.plantAction.name);
+
       final temp = ActionDate(
         actionId: item.plantAction.id,
         dates: item.dates,
